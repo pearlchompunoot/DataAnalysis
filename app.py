@@ -4,13 +4,31 @@ import google.generativeai as genai
 import plotly.express as px
 
 # ==========================================
-# 1. ตั้งค่ากุญแจ (ดึงจาก Secrets)
+# 1. ตั้งค่ากุญแจ (แบบ Dynamic เพื่อแก้ 404)
 # ==========================================
-# หยิบกุญแจที่ซ่อนไว้ใน Streamlit Settings
 GOOGLE_API_KEY = st.secrets["GEMINI_API_KEY"]
-
 genai.configure(api_key=GOOGLE_API_KEY)
-model = genai.GenerativeModel('gemini-pro')
+
+# ฟังก์ชันช่วยหาชื่อรุ่นที่ใช้งานได้จริง
+def get_available_model():
+    try:
+        for m in genai.list_models():
+            # เช็คว่ารุ่นไหนรองรับการ 'generateContent' บ้าง
+            if 'generateContent' in m.supported_generation_methods:
+                # ถ้าเจอ gemini-1.5-flash ให้เลือกตัวนี้ก่อน
+                if 'gemini-1.5-flash' in m.name:
+                    return m.name
+        # ถ้าไม่เจอ 1.5-flash ให้เอาตัวแรกที่ใช้ได้
+        return 'gemini-pro' 
+    except Exception:
+        return 'gemini-pro'
+
+# เรียกใช้ชื่อรุ่นที่ระบบหาเจอจริงๆ
+actual_model_name = get_available_model()
+model = genai.GenerativeModel(actual_model_name)
+
+# แสดงชื่อรุ่นที่ใช้จริงใน Sidebar (เอาไว้เช็ค)
+st.sidebar.write(f"🤖 Active Model: {actual_model_name}")
 # 2. ตั้งค่าหน้าตาเว็บ (UI)
 # ==========================================
 st.set_page_config(page_title="Thai Data AI Assistant", layout="wide")
