@@ -4,14 +4,13 @@ import google.generativeai as genai
 import plotly.express as px
 
 # ==========================================
-# 1. ตั้งค่ากุญแจ (API KEY)
-# ไปเอาที่ https://aistudio.google.com/
+# 1. ตั้งค่ากุญแจ (ดึงจาก Secrets)
 # ==========================================
-GOOGLE_API_KEY = "AIzaSyC0zbK1xA2zLY-g3-FeIVBgl7HcBv4rpBs" 
+# หยิบกุญแจที่ซ่อนไว้ใน Streamlit Settings
+GOOGLE_API_KEY = st.secrets["GEMINI_API_KEY"]
+
 genai.configure(api_key=GOOGLE_API_KEY)
-# แก้จาก gemini-1.5-flash-latest เป็นตัวนี้ครับ
 model = genai.GenerativeModel('gemini-pro')
-# ==========================================
 # 2. ตั้งค่าหน้าตาเว็บ (UI)
 # ==========================================
 st.set_page_config(page_title="Thai Data AI Assistant", layout="wide")
