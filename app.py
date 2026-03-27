@@ -9,7 +9,8 @@ import plotly.express as px
 # ==========================================
 GOOGLE_API_KEY = "AIzaSyC0zbK1xA2zLY-g3-FeIVBgl7HcBv4rpBs" 
 genai.configure(api_key=GOOGLE_API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash')
+# แก้จาก gemini-1.5-flash-latest เป็นตัวนี้ครับ
+model = genai.GenerativeModel('gemini-pro')
 # ==========================================
 # 2. ตั้งค่าหน้าตาเว็บ (UI)
 # ==========================================
