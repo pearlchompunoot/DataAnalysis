@@ -2,33 +2,39 @@ import streamlit as st
 import pandas as pd
 import google.generativeai as genai
 import plotly.express as px
-
 # ==========================================
-# 1. ตั้งค่ากุญแจ (แบบ Dynamic เพื่อแก้ 404)
+# 1. ตั้งค่ากุญแจ (แบบแก้ปัญหา 404 โดยเฉพาะ)
 # ==========================================
 GOOGLE_API_KEY = st.secrets["GEMINI_API_KEY"]
 genai.configure(api_key=GOOGLE_API_KEY)
 
-# ฟังก์ชันช่วยหาชื่อรุ่นที่ใช้งานได้จริง
-def get_available_model():
+# รายชื่อรุ่นที่ "น่าจะเป็นไปได้" ทั้งหมด
+possible_models = [
+    'gemini-1.5-flash', 
+    'models/gemini-1.5-flash',
+    'gemini-1.0-pro', 
+    'models/gemini-pro',
+    'gemini-pro'
+]
+
+# ลองสุ่มหาตัวที่รันผ่าน
+selected_model_name = None
+for m_name in possible_models:
     try:
-        for m in genai.list_models():
-            # เช็คว่ารุ่นไหนรองรับการ 'generateContent' บ้าง
-            if 'generateContent' in m.supported_generation_methods:
-                # ถ้าเจอ gemini-1.5-flash ให้เลือกตัวนี้ก่อน
-                if 'gemini-1.5-flash' in m.name:
-                    return m.name
-        # ถ้าไม่เจอ 1.5-flash ให้เอาตัวแรกที่ใช้ได้
-        return 'gemini-pro' 
+        test_model = genai.GenerativeModel(m_name)
+        # ทดสอบส่งคำถามสั้นๆ ถ้าไม่ Error แสดงว่ารุ่นนี้ใช้ได้
+        test_model.generate_content("hi", generation_config={"max_output_tokens": 1})
+        selected_model_name = m_name
+        break 
     except Exception:
-        return 'gemini-pro'
+        continue
 
-# เรียกใช้ชื่อรุ่นที่ระบบหาเจอจริงๆ
-actual_model_name = get_available_model()
-model = genai.GenerativeModel(actual_model_name)
-
-# แสดงชื่อรุ่นที่ใช้จริงใน Sidebar (เอาไว้เช็ค)
-st.sidebar.write(f"🤖 Active Model: {actual_model_name}")
+if selected_model_name:
+    model = genai.GenerativeModel(selected_model_name)
+    st.sidebar.success(f"✅ เชื่อมต่อสำเร็จ: {selected_model_name}")
+else:
+    st.error("❌ ไม่สามารถเชื่อมต่อกับ Gemini ได้เลย โปรดเช็ค API Key หรือ Region")
+    st.stop()
 # 2. ตั้งค่าหน้าตาเว็บ (UI)
 # ==========================================
 st.set_page_config(page_title="Thai Data AI Assistant", layout="wide")
